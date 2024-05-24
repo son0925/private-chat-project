@@ -4,11 +4,18 @@ const app = express();
 const server = require('http').createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server);
+const mongoose = require('mongoose');
+require('dotenv').config();
 
 
 const publicDirectoryPath = path.join(__dirname, '../public');
 app.use(express.static(publicDirectoryPath));
 app.use(express.json());
+
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log('Mongo Connected'))
+  .catch((err) => console.log(err))
+
 
 let users = [];
 
