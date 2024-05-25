@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const io = new Server(server);
 const mongoose = require('mongoose');
 require('dotenv').config();
+const crypto = require('crypto');
 
 
 const publicDirectoryPath = path.join(__dirname, '../public');
@@ -16,13 +17,38 @@ mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log('Mongo Connected'))
   .catch((err) => console.log(err))
 
+const randomId = () => crypto.randomBytes(8).toString('hex');
+
+app.post('/session', (req,res) => {
+  const data = {
+    username: req.body.username,
+    userID: randomId()
+  }
+  res.send(data);
+})
+
+io.use((socket, next) => {
+  const username = socket.handshake.auth.username;
+  const userID = socket.handshake.auth.userID;
+  if (!username) {
+    return next(new Error('Invalid username'));
+  }
+
+  socket.username = username;
+  socket.id = userID;
+
+  next();
+})
 
 let users = [];
 
 
 io.on('connection', async socket => {
 
-  let userData = {};
+  let userData = {
+    username: socket.username,
+    userID: socket.id
+  };
   users.push(userData);
 
   io.emit('users-data', { users })
