@@ -15,7 +15,25 @@ app.use(express.static(publicDirectoryPath));
 // json 파싱
 app.use(express.json());
 
+// 메모리에 로그인 한 유저 저장
+let users = [];
 
+// 클라이언트, 서버 socket connection event
+io.on('connection', async(socket) => {
+  let userData = {};
+  users.push(userData);
+  // 서버가 모든 클라이언ㅌ
+  io.emit('users-data', {users});
+
+  // 클라이언트가 보낸 메세지
+  socket.on('message-to-server', () => {})
+
+  // 데이터베이스에서 메세지 가지고 오기
+  socket.on('fetch-messages', () => {});
+
+  // 유저가 방에서 나갔을 때
+  socket.on('disconnect', () => {});
+})
 
 
 // 서버 listener
