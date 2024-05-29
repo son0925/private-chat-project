@@ -9,6 +9,7 @@ const io = new Server(server);
 const path = require('path');
 const mongoose = require('mongoose');
 require('dotenv').config();
+const crypto = require('crypto');
 
 
 // 정적 파일 위치와 제공
@@ -28,10 +29,27 @@ mongoose.connect(process.env.MONGO_URL)
   .catch((err) => {console.log(err)})
 
 
+// socket 미들웨어
+io.use((socket, next) => {
+  const username = socket.handshake.auth.username;
+  const userID = socket.handshake.auth.userID;
+  if (!username) {
+    return next(new Error('Invalid username'));
+  }
+
+  socket.username = username;
+  socket.id = userID;
+  next()
+})
+
+
 
 // 클라이언트, 서버 socket connection event
 io.on('connection', async(socket) => {
-  let userData = {};
+  let userData = {
+    username: socket.username,
+    userID: socket.id
+  };
   users.push(userData);
   // 서버가 모든 클라이언트에게 보내기
   io.emit('users-data', {users});
@@ -44,6 +62,18 @@ io.on('connection', async(socket) => {
 
   // 유저가 방에서 나갔을 때
   socket.on('disconnect', () => {});
+})
+
+
+
+const randomId = () => crypto.randomBytes(8).toString('hex');
+
+app.post('/session', (req,res) => {
+  const data = {
+    username: req.body.username,
+    userID: randomId()
+  }
+  res.send(data);
 })
 
 

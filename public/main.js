@@ -1,6 +1,6 @@
 // 전역 변수
 const chatBody = document.querySelector('.chat-body');
-const userTitle = document.querySelector('user-title');
+const userTitle = document.querySelector('#user-title');
 const loginContainer = document.querySelector('.login-container');
 const userTable = document.querySelector('.users');
 const userTagLine = document.querySelector('#users-tagline');
@@ -61,4 +61,42 @@ const createSession = async(username) => {
 const socketConnect = async(username, userID) => {
   socket.auth = {username, userID}
   await socket.connect();
+}
+
+
+socket.on('users-data', ({users}) => {
+  // 클라 본인 제거
+  const index = users.findIndex(user => user.userID === socket.id)
+  if (index > -1) {
+    users.splice(index,1);
+  }
+  console.log(users)
+
+  // user table list 생성하기
+  let ul = `<table class="table table-hover">`;
+  for (const user of users) {
+    ul += `<tr class="socket-users" onclick="setActiveUser(this, '${user.username}', '${user.userID}')"><td>${user.username}<span class="text-danger ps-1 d-none" id="${user.userID}">!</span></td></tr>`
+  }
+  ul += `</table>`;
+  if (users.length > 0) {
+    userTagLine.innerHTML = '접속 중인 유저';
+    userTagLine.classList.remove('text-danger');
+    userTagLine.classList.add('text-success');
+  }
+  else {
+    userTagLine.innerHTML = '접속 중인 유저가 없음';
+    userTagLine.classList.remove('text-success');
+    userTagLine.classList.add('text-danger');
+  }
+})
+
+const sessUserName = localStorage.getItem('session-username');
+const sessUserID = localStorage.getItem('session-userID');
+
+if (sessUserID && sessUserName) {
+  socketConnect(sessUserName, sessUserID);
+
+  loginContainer.classList.add('d-none');
+  chatBody.classList.remove('d-none');
+  userTitle.innerHTML = sessUserName;
 }
