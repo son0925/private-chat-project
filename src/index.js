@@ -7,6 +7,8 @@ const server = http.createServer(app);
 const { Server } = require('socket.io');
 const io = new Server(server);
 const path = require('path');
+const mongoose = require('mongoose');
+require('dotenv').config();
 
 
 // 정적 파일 위치와 제공
@@ -18,11 +20,20 @@ app.use(express.json());
 // 메모리에 로그인 한 유저 저장
 let users = [];
 
+
+
+// MongoDB 연결
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => {console.log('Mongo Connect')})
+  .catch((err) => {console.log(err)})
+
+
+
 // 클라이언트, 서버 socket connection event
 io.on('connection', async(socket) => {
   let userData = {};
   users.push(userData);
-  // 서버가 모든 클라이언ㅌ
+  // 서버가 모든 클라이언트에게 보내기
   io.emit('users-data', {users});
 
   // 클라이언트가 보낸 메세지
