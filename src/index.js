@@ -10,6 +10,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 require('dotenv').config();
 const crypto = require('crypto');
+const saveMessages = require('./utils/messages');
 
 
 // 정적 파일 위치와 제공
@@ -55,7 +56,10 @@ io.on('connection', async(socket) => {
   io.emit('users-data', {users});
 
   // 클라이언트가 보낸 메세지
-  socket.on('message-to-server', () => {})
+  socket.on('message-to-server', (payload) => {
+    io.to(payload.to).emit('message-to-client', payload);
+    saveMessages(payload);  
+  })
 
   // 데이터베이스에서 메세지 가지고 오기
   socket.on('fetch-messages', () => {});
