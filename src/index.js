@@ -10,7 +10,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 require('dotenv').config();
 const crypto = require('crypto');
-const saveMessages = require('./utils/messages');
+const {saveMessages, fetchMessages} = require('./utils/messages');
 
 
 // 정적 파일 위치와 제공
@@ -62,10 +62,21 @@ io.on('connection', async(socket) => {
   })
 
   // 데이터베이스에서 메세지 가지고 오기
-  socket.on('fetch-messages', () => {});
+  socket.on('fetch-messages', ({receiver}) => {
+    fetchMessages(io, socket.id, receiver);
+
+
+  });
 
   // 유저가 방에서 나갔을 때
-  socket.on('disconnect', () => {});
+  socket.on('disconnect', () => {
+    users = users.filter(user => user.userID !== socket.id);
+    // 사이드바 리스트에서 없애기
+    io.emit('users-data', {users})
+
+    // 대화중이라면 대화창 없애기
+    io.emit('user-away', socket.id);
+  });
 })
 
 

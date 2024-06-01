@@ -163,7 +163,6 @@ msgForm.addEventListener('submit', e => {
 socket.on('message-to-client', ({from, message, time}) => {
   const receiver = title.getAttribute('userID');
   const notify = document.getElementById(from);
-
   if (receiver === null) {
     notify.classList.remove('d-none');
   }
@@ -177,5 +176,40 @@ socket.on('message-to-client', ({from, message, time}) => {
   }
   else {
     notify.classList.remove('d-none')
+  }
+})
+
+socket.on('user-away', userID => {
+  const to = title.getAttribute('userID');
+  if (to === userID) {
+    title.innerHTML = '&nbsp;';
+    msgDiv.classList.add('d-none');
+    messages.classList.add('d-none');
+  }
+})
+
+socket.on('stored-messages', ({messages}) => {
+  if (messages.length > 0) {
+    messages.forEach(msg => {
+      const payload = {
+        message: msg.messages,
+        time: msg.time
+      }
+      
+      if (msg.from === socket.id) {
+        appendMessage({
+          ...payload,
+          background: 'bg-success',
+          position: 'right'
+        })
+      }
+      else {
+        appendMessage({
+          ...payload,
+          background: 'bg-secondary',
+          position: 'left'
+        })
+      }
+    })
   }
 })
