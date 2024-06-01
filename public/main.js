@@ -63,6 +63,26 @@ const socketConnect = async(username, userID) => {
   await socket.connect();
 }
 
+const setActiveUser = (element, username, userID) => {
+  title.innerHTML = username;
+  // 새로운 속성 넣기
+  title.setAttribute('userID', userID);
+
+  const lists = document.getElementsByClassName('socket-users');
+  for (let i = 0; i < lists.length; i++) {
+    lists[i].classList.remove('table-active');
+  }
+  element.classList.add('table-active');
+
+  // 사용자 선택 후 메세지 영역 표시
+  msgDiv.classList.remove('d-none');
+  messages.classList.remove('d-none');
+  messages.innerHTML = '';
+  socket.emit('fetch-messages', {receiver: userID});
+  const notify = document.getElementById(userID);
+  notify.classList.add('d-none');
+}
+
 
 socket.on('users-data', ({users}) => {
   // 클라 본인 제거
@@ -79,6 +99,7 @@ socket.on('users-data', ({users}) => {
   }
   ul += `</table>`;
   if (users.length > 0) {
+    userTable.innerHTML = ul;
     userTagLine.innerHTML = '접속 중인 유저';
     userTagLine.classList.remove('text-danger');
     userTagLine.classList.add('text-success');
